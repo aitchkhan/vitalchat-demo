@@ -1,5 +1,7 @@
 'use strict';
 const path = require('path');
+const webpack = require('webpack');
+const Dotenv = require('dotenv-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const rootPath = path.resolve(__dirname, '../');
 
@@ -38,9 +40,11 @@ module.exports = {
         ],
         extensions: ['.js',],
     },
-    plugins: [new HtmlWebpackPlugin({
-        hash: true,
-        template: path.join(rootPath, './src/index.html'),
-        // filename: './dist/index.html' //relative to root of the application
-    })]
+    plugins: [
+        new HtmlWebpackPlugin({
+            hash: true,
+            template: path.join(rootPath, './src/index.html'),
+        }),
+        new Dotenv({path: path.join(rootPath, './.env'),}),
+    ]
 }

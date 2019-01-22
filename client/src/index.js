@@ -1,6 +1,7 @@
 import VitalChatClient from 'vitalchat-client';
 
-const API_SERVER_URL = "http://localhost:3000";
+const API_SERVER_URL = process.env.API_SERVER_URL;
+const VC_SERVER_URL= process.env.VC_SERVER_URL;
 const CREATE_SESSION_ENDPOINT = "/create_session";
 
 fetch(`${API_SERVER_URL}${CREATE_SESSION_ENDPOINT}`)
@@ -20,7 +21,7 @@ const setUpClient = (session_id) => {
 
     //setup the vitalchat client
     const client = new VitalChatClient({
-        baseUrl: 'signal-local.vitalchat.com:1443', //vital chat signal server
+        baseUrl: VC_SERVER_URL, //vital chat signal server
         session_id: session_id,
         localVideo: localVideo,
         remoteVideo: remoteVideo,

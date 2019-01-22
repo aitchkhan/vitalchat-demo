@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "restify": "^7.5.0",
-    "vitalchat": "0.0.2"
+    "vitalchat": "0.0.3"
   }
 }

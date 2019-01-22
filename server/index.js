@@ -18,7 +18,6 @@ server.get('/create_session', (req, res, next) => {
         secret: 'dfff6d37-4a7f-4d4d-9d48-14b6e8958ecb',
         baseUrl: 'https://signal-local.vitalchat.com:1443'
     });
-console.log("sasd")
     client.createSession({
         tags: [{ my_id: '1234' }, { reference: '5678' }],
         callback: { url: 'https://myserver.com/vitalchat', user: '', password: '' },

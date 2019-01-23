@@ -51,7 +51,6 @@ module.exports = {
         new HtmlWebpackPlugin({
             hash: true,
             template: path.join(rootPath, './src/index.html'),
-            // filename: './dist/index.html' //relative to root of the application
         }),
     ]
 }

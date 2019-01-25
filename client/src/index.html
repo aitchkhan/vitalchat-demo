@@ -46,6 +46,10 @@
                 right: 25%;
                 left: 50%;
                 transition: 0.5s;
+                color: white;
+
+                /* Hide all controlbars by default */
+                display: none;
             }
             .stats {
                 position: absolute;
@@ -73,9 +77,6 @@
                 top: 0px;
                 right: 0px;
             }
-            #control-play {
-                display: none;
-            }
         </style>
     </head>
     <body>
@@ -96,6 +97,7 @@
             <div class="control" id="control-start">
                 <button type="button" class="btn btn-success btn-circle btn-lg" id="make-call"><i class="fa fa-phone"></i></button>
             </div>
+            <div class="control" id="control-status"></div>
         </div>
     </body>
 </html>

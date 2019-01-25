@@ -1,4 +1,4 @@
-import VitalChatClient from 'vitalchat-client';
+import VitalChat from 'vitalchat-client';
 
 const API_SERVER_URL = process.env.API_SERVER_URL;
 const VC_SERVER_URL= process.env.VC_SERVER_URL;
@@ -6,8 +6,23 @@ const CREATE_SESSION_ENDPOINT = '/create_session';
 
 window.onload = setupClient;
 
+function showControlbar(name) {
+    const controlbars = ['start', 'play', 'status'];
+    if (controlbars.indexOf(name) == -1) {
+        throw new Error('Unknown control bar');
+    }
+
+    for (const controlbar of controlbars) {
+        const display = name == controlbar ? 'block' : 'none';
+        document.getElementById(`control-${controlbar}`).style.display = display;
+    }
+}
+function showStatus(status) {
+    document.getElementById('control-status').innerHTML = status;
+    showControlbar('status');
+}
+
 function setupClient() {
-    //refs to remoteVideo and localVideo elements
     const remoteVideo = document.getElementById('remotevideo');
     const localVideo = document.getElementById('localvideo');
 
@@ -33,10 +48,12 @@ function setupClient() {
     }
 
     document.getElementById('make-call').onclick = () => {
+        showStatus('Creating session...');
         return fetch(`${API_SERVER_URL}${CREATE_SESSION_ENDPOINT}`)
             .then(response => response.json())
             .then(({session_id}) => {
-                client = new VitalChatClient({
+                showStatus('Connecting...');
+                client = new VitalChat({
                     baseUrl: VC_SERVER_URL, //vital chat signal server
                     session_id: session_id,
                     localVideo: localVideo,
@@ -44,13 +61,11 @@ function setupClient() {
                 });
 
                 client.session.on('connect', () => {
-                    document.getElementById('control-start').style.display = 'none';
-                    document.getElementById('control-play').style.display = 'block';
+                    showControlbar('play');
                 });
 
                 client.session.on('disconnect', () => {
-                    document.getElementById('control-start').style.display = 'block';
-                    document.getElementById('control-play').style.display = 'none';
+                    showControlbar('start');
                 });
 
                 // TODO: Fix SDK so that we remove setTimeout
@@ -77,4 +92,6 @@ function setupClient() {
     document.getElementById('video').onclick = () => {
         client.useVideo();
     };
+
+    showControlbar('start');
 }

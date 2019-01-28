@@ -1,16 +1,11 @@
+const cors = require('cors');
 const restify = require('restify');
 const VitalChat = require('vitalchat');
 
 const PORT = parseInt(process.env['PORT']) || 3000;
 const server = restify.createServer();
 
-server.use(
-    function crossOrigin(req,res,next){
-      res.header("Access-Control-Allow-Origin", "*");
-      res.header("Access-Control-Allow-Headers", "X-Requested-With");
-      return next();
-    }
-  );
+server.use(cors());
 
 server.get('/create_session', (req, res, next) => {
     const client = new VitalChat({
@@ -24,7 +19,6 @@ server.get('/create_session', (req, res, next) => {
         defaults: { character: 'sally' }
     })
         .then((session) => {
-            console.log("then")
             session.on('connect', (session_id) => {
                 console.log(session_id, 'connected');
 
@@ -37,9 +31,8 @@ server.get('/create_session', (req, res, next) => {
                 console.log(message.session_id, 'message:', message.data);
             })
 
-        }).catch((err) => {
-            res.send(err);
-        });;
+        })
+        .catch(res.send);
 });
 
 server.listen(PORT, () => {

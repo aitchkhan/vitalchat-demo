@@ -32,7 +32,9 @@ server.get('/create_session', (req, res, next) => {
             })
 
         })
-        .catch(res.send);
+        .catch((err) => {
+            res.send(err);
+        });
 });
 
 server.listen(PORT, () => {

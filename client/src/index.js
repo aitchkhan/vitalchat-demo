@@ -50,7 +50,13 @@ function setupClient() {
     document.getElementById('make-call').onclick = () => {
         showStatus('Creating session...');
         return fetch(`${API_SERVER_URL}${CREATE_SESSION_ENDPOINT}`)
-            .then(response => response.json())
+            .then((response) => {
+                if (response.status != 200) {
+                    throw new Error(`Failed to create session (${response.statusText})`);
+                }
+
+                return response.json()
+            })
             .then(({session_id}) => {
                 showStatus('Connecting...');
                 client = new VitalChat({
@@ -69,6 +75,10 @@ function setupClient() {
                 });
 
                 client.connect();
+            })
+            .catch((err) => {
+                showStatus(err);
+                setTimeout(() => showControlbar('start'), 1000);
             });
     }
 

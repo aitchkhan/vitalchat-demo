@@ -60,37 +60,34 @@ function setupClient() {
                     remoteVideo: remoteVideo,
                 });
 
-                client.session.on('connect', () => {
+                client.on('connect', () => {
                     showControlbar('play');
                 });
 
-                client.session.on('disconnect', () => {
+                client.on('disconnect', () => {
                     showControlbar('start');
                 });
 
-                // TODO: Fix SDK so that we remove setTimeout
-                setTimeout(() => {
-                    client.initiateCall();
-                }, 1000);
+                client.connect();
             });
     }
 
     document.getElementById('drop-call').onclick = () => {
-        client.endCall();
+        client.end();
     }
 
     document.getElementById('speak').onclick = () => {
         const text = document.getElementById('speak-text').value;
-        client.hearBot(text, 'text');
+        client.speak(text, 'text');
     };
     document.getElementById('music').onclick = () => {
-        client.useAudio();
+        client.playAudio();
     };
     document.getElementById('image').onclick = () => {
-        client.useImageVideo();
+        client.playImage();
     };
     document.getElementById('video').onclick = () => {
-        client.useVideo();
+        client.playVideo();
     };
 
     showControlbar('start');

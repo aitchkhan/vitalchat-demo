@@ -42,7 +42,7 @@ module.exports = {
     },
     devServer: {
         contentBase: path.join(rootPath, './dist'),
-        host: '0.0.0.0',
+        host: 'localhost',
         // watchContentBase: true,
         port: 9000
     },

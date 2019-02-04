@@ -1,16 +1,19 @@
 const cors = require('cors');
 const restify = require('restify');
+require('dotenv').config();
 const VitalChat = require('vitalchat');
+const initSpeechEngine = require('./speech-engine');
 
 const PORT = parseInt(process.env['PORT']) || 3000;
 const server = restify.createServer();
+const io = require('socket.io').listen(server.server);
 const WatsonAssistant = require('./watson-assistant');
 const store = {};
 const assistant = new WatsonAssistant({
     version: '2018-11-08',
-    iam_apikey: 'LpRgQnxxROitLdRAW0dJS1tuBj7evM4coxj94Jz1PWp8',
-    url: 'https://gateway-tok.watsonplatform.net/assistant/api',
-    assistant_id: 'ffad920c-9d37-4522-812a-35777b57cc27'
+    iam_apikey: process.env['WATSON_IAM_APIKEY'],
+    url: process.env['WATSON_URL'],
+    assistant_id: process.env['WATSON_ASSISTANT_ID']
 });
 
 const EMOTIONS = {
@@ -19,9 +22,8 @@ const EMOTIONS = {
     "1": "EMOTION_HAPPY",
 }
 
-server.use(cors());
 
-server.get('/create_session', (req, res) => {
+server.get('/create_session', cors(), (req, res) => {
     const client = new VitalChat({
         key: 'test',
         secret: 'dfff6d37-4a7f-4d4d-9d48-14b6e8958ecb',
@@ -131,6 +133,8 @@ server.get('/create_session', (req, res) => {
             res.send(err);
         });
 });
+
+initSpeechEngine(io);
 
 server.listen(PORT, () => {
     console.log('%s listening at %s', server.name, server.url);

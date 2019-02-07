@@ -22,7 +22,29 @@ const EMOTIONS = {
     "1": "EMOTION_HAPPY",
 }
 
+const HANDGESTURES = {
+    "1": "ONE",
+    "2": "TWO",
+    "3": "THREE",
+    "4": "FOUR",
+    "5": "FIVE",
+    "11": "WAVE",
+}
 
+const HEADGESTURES = {
+    '0': "NOD_NO",
+    '1': "NOD_YES",
+    '2': "TILT_RIGHT",
+    '3': "TILT_LEFT",
+    '4': "LOOK_RIGHT",
+    '5': "LOOK_LEFT",
+    '6': "LOOK_UP",
+    '7': "LOOK_DOWN",
+    '8': "LOOK_LEFT_UP",
+    '9': "LOOK_LEFT_DOWN",
+    '10': "LOOK_RIGHT_UP",
+    '11': "LOOK_RIGHT_DOWN",
+}
 server.get('/create_session', cors(), (req, res) => {
     const client = new VitalChat({
         key: 'test',
@@ -42,7 +64,9 @@ server.get('/create_session', cors(), (req, res) => {
                         watson_session_id,
                         context: {},
                         greeting_done: false,
-                        gesture_recognition: false
+                        gesture_recognition: false,
+                        isBotSpeaking: false,
+                        play_video: false
                     }
                     res.send({ session_id })
                 }).catch((err) => {
@@ -57,8 +81,14 @@ server.get('/create_session', cors(), (req, res) => {
             session.on('message', ({ data, session_id }) => {
                 const message = JSON.parse(data);
                 switch (message.type) {
+                    case 'eos':
+                        store[session_id].isBotSpeaking = false;
+                        break;
                     case 'speech':
                         {
+                            if (store[session_id].isBotSpeaking) {
+                                return;
+                            }
                             const sessionDetails = store[session_id];
                             const { watson_session_id, context } = sessionDetails;
                             assistant.message(message.transcript, watson_session_id, context)
@@ -72,6 +102,7 @@ server.get('/create_session', cors(), (req, res) => {
                                                 store[session_id].greeting_done = true;
                                                 break;
                                             case 'PLAY_VIDEO':
+                                                store[session_id].play_video = true;
                                                 session.sendMessage({ type: 'video' });
                                                 shouldSpeak = false;
                                                 break;
@@ -81,11 +112,13 @@ server.get('/create_session', cors(), (req, res) => {
                                             case 'GESTURE_RECOGNITION':
                                                 console.log("Enabling gesture recognition");
                                                 store[session_id].gesture_recognition = true;
+                                                store[session_id].play_video = false;
                                                 break;
                                         }
                                     }
                                     if (shouldSpeak) {
                                         const watsonText = response.output.generic[0].text;
+                                        store[session_id].isBotSpeaking = true;
                                         session.speak(watsonText, 'ssml');
                                     }
                                 }).catch((err) => {
@@ -94,6 +127,9 @@ server.get('/create_session', cors(), (req, res) => {
                         }
                         break;
                     case 'face_attributes':
+                        if (store[session_id].isBotSpeaking) {
+                            return;
+                        }
                         if (message.data && message.data.FaceMatches) {
                             const username = message.data.FaceMatches[0].Face.ExternalImageId;
                             store[session_id].context.username = username;
@@ -103,6 +139,7 @@ server.get('/create_session', cors(), (req, res) => {
                             assistant.message("Hello", watson_session_id, context).then((response) => {
                                 const watsonText = response.output.generic[0].text;
                                 store[session_id].greeting_done = true;
+                                store[session_id].isBotSpeaking = true;
                                 session.speak(watsonText, 'ssml');
                             }).catch((err) => {
                                 console.error(err);
@@ -110,11 +147,52 @@ server.get('/create_session', cors(), (req, res) => {
                         }
                         break;
                     case 'detection':
+                        if (store[session_id].isBotSpeaking) {
+                            return;
+                        }
+                        if (store[session_id].play_video && message.data && message.data.handgesture === 12) {
+                            store[session_id].isBotSpeaking = true;
+                            const { watson_session_id, context } = store[session_id];
+                            assistant.message("Skip the video", watson_session_id, context).then((response) => {
+                                const watsonText = response.output.generic[0].text;
+                                store[session_id].play_video = false;
+                                store[session_id].gesture_recognition = true;
+                                session.speak(watsonText, 'ssml');
+                            }).catch((err) => {
+                                console.error(err);
+                            });
+                        }
                         if (message.data && store[session_id].gesture_recognition) {
                             if (message.data.emotion === 1) { // Only when happy
+                                store[session_id].isBotSpeaking = true;
                                 const emotion = message.data.emotion;
                                 const { watson_session_id, context } = store[session_id];
-                                const contextWithGesture = Object.assign(context, { "emotion": EMOTIONS[emotion.toString()] })
+                                const contextWithGesture = Object.assign(context, { "gesture": EMOTIONS[emotion.toString()] })
+                                assistant.message("", watson_session_id, contextWithGesture).then((response) => {
+                                    console.log('watson', JSON.stringify(response));
+                                    const watsonText = response.output.generic[0].text;
+                                    store[session_id].isBotSpeaking = true;
+                                    session.speak(watsonText, 'ssml');
+                                }).catch((err) => {
+                                    console.error(err);
+                                });
+                            } else if (message.data.handgesture === 11) { // Only when waving
+                                store[session_id].isBotSpeaking = true;
+                                const handgesture = message.data.handgesture;
+                                const { watson_session_id, context } = store[session_id];
+                                const contextWithGesture = Object.assign(context, { "gesture": HANDGESTURES[handgesture.toString()] })
+                                assistant.message("", watson_session_id, contextWithGesture).then((response) => {
+                                    console.log('watson', JSON.stringify(response));
+                                    const watsonText = response.output.generic[0].text;
+                                    session.speak(watsonText, 'ssml');
+                                }).catch((err) => {
+                                    console.error(err);
+                                });
+                            } else if (message.data.headgesture && message.data.headgesture !== -1 && message.data.headgesture !== 0 && message.data.headgesture !== 1) { // Ignore nod
+                                store[session_id].isBotSpeaking = true;
+                                const headgesture = message.data.headgesture;
+                                const { watson_session_id, context } = store[session_id];
+                                const contextWithGesture = Object.assign(context, { "gesture": HEADGESTURES[headgesture.toString()] })
                                 assistant.message("", watson_session_id, contextWithGesture).then((response) => {
                                     console.log('watson', JSON.stringify(response));
                                     const watsonText = response.output.generic[0].text;
@@ -124,7 +202,7 @@ server.get('/create_session', cors(), (req, res) => {
                                 });
                             }
                         }
-
+                        break;
                 }
             })
 

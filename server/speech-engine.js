@@ -13,12 +13,17 @@ module.exports = function initSpeechEngine(io) {
 
     function startRecognitionStream(client, data) {
         recognizeStream = speechClient.streamingRecognize(request)
-            .on('error', console.error)
+            .on('error', () => {
+                recognizeStream = null;
+                startRecognitionStream();
+            })
             .on('data', (data) => {
                 process.stdout.write(data.results[0] && data.results[0].alternatives[0]
                     ? `Transcription: ${data.results[0].alternatives[0].transcript}\n`
                     : `\n\nReached transcription time limit, press Ctrl+C\n`);
-                client.emit('speechData', data);
+                if (client) {
+                    client.emit('speechData', data);
+                }
 
                 /*
                  * If end of utterance, let's restart stream

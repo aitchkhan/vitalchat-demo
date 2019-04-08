@@ -60,8 +60,8 @@ module.exports = class SessionController {
             case 'eos':
                 this.onEOS();
                 break;
-            case 'speech':
-                this.onSpeech(message.transcript);
+            case 'transcript':
+                this.onSpeech(message.data.transcript);
                 break;
             case 'face_attributes':
                 this.onFaceAttributes(message.data);

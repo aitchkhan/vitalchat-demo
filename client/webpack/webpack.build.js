@@ -1,7 +1,6 @@
 'use strict';
 const path = require('path');
 const webpack = require('webpack');
-const Dotenv = require('dotenv-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const rootPath = path.resolve(__dirname, '../');
 
@@ -41,10 +40,13 @@ module.exports = {
         extensions: ['.js',],
     },
     plugins: [
+        new webpack.DefinePlugin({
+            VC_SERVER_URL: JSON.stringify(process.env.VC_SERVER_URL),
+            API_SERVER_URL: JSON.stringify(process.env.API_SERVER_URL),
+        }),
         new HtmlWebpackPlugin({
             hash: true,
             template: path.join(rootPath, './src/index.html'),
         }),
-        new Dotenv({path: path.join(rootPath, './.env'),}),
     ]
 }

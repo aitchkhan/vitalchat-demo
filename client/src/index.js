@@ -1,7 +1,5 @@
 import VitalChat from 'vitalchat-client';
 
-const API_SERVER_URL = process.env.API_SERVER_URL;
-const VC_SERVER_URL= process.env.VC_SERVER_URL;
 const CREATE_SESSION_ENDPOINT = '/create_session';
 
 window.onload = setupClient;
@@ -60,7 +58,7 @@ function setupClient() {
             .then(({session_id}) => {
                 showStatus('Connecting...');
                 client = new VitalChat({
-                    baseUrl: VC_SERVER_URL, //vital chat signal server
+                    baseUrl: VC_SERVER_URL,
                     session_id: session_id,
                     localVideo: localVideo,
                     remoteVideo: remoteVideo,

@@ -1,4 +1,3 @@
-
 const WatsonAssistantV2 = require('watson-developer-cloud/assistant/v2');
 
 class WatsonAssistant {

@@ -1,5 +1,5 @@
 const WatsonAssistant = require('./watson-assistant');
-const store = {};
+
 const assistant = new WatsonAssistant({
     version: '2018-11-08',
     iam_apikey: process.env['WATSON_IAM_APIKEY'],
@@ -8,33 +8,33 @@ const assistant = new WatsonAssistant({
 });
 
 const EMOTIONS = {
-    "-1": "NO_EMOTION_DETECTED",
-    "0": "EMOTION_NEUTRAL",
-    "1": "EMOTION_HAPPY",
+    '-1': 'NO_EMOTION_DETECTED',
+    '0': 'EMOTION_NEUTRAL',
+    '1': 'EMOTION_HAPPY',
 }
 
 const HANDGESTURES = {
-    "1": "ONE",
-    "2": "TWO",
-    "3": "THREE",
-    "4": "FOUR",
-    "5": "FIVE",
-    "11": "WAVE",
+    '1': 'ONE',
+    '2': 'TWO',
+    '3': 'THREE',
+    '4': 'FOUR',
+    '5': 'FIVE',
+    '11': 'WAVE',
 }
 
 const HEADGESTURES = {
-    '0': "NOD_NO",
-    '1': "NOD_YES",
-    '2': "TILT_RIGHT",
-    '3': "TILT_LEFT",
-    '4': "LOOK_RIGHT",
-    '5': "LOOK_LEFT",
-    '6': "LOOK_UP",
-    '7': "LOOK_DOWN",
-    '8': "LOOK_LEFT_UP",
-    '9': "LOOK_LEFT_DOWN",
-    '10': "LOOK_RIGHT_UP",
-    '11': "LOOK_RIGHT_DOWN",
+    '0': 'NOD_NO',
+    '1': 'NOD_YES',
+    '2': 'TILT_RIGHT',
+    '3': 'TILT_LEFT',
+    '4': 'LOOK_RIGHT',
+    '5': 'LOOK_LEFT',
+    '6': 'LOOK_UP',
+    '7': 'LOOK_DOWN',
+    '8': 'LOOK_LEFT_UP',
+    '9': 'LOOK_LEFT_DOWN',
+    '10': 'LOOK_RIGHT_UP',
+    '11': 'LOOK_RIGHT_DOWN',
 }
 
 module.exports = class SessionController {
@@ -52,7 +52,6 @@ module.exports = class SessionController {
         return assistant.createSession().then((watson_session_id) => {
             this.watson_session_id = watson_session_id;
         })
-
     }
 
     onMessage(message) {
@@ -70,7 +69,6 @@ module.exports = class SessionController {
                 this.onDetection(message.data);
                 break;
             default:
-
         }
     }
 
@@ -102,7 +100,7 @@ module.exports = class SessionController {
                             shouldSpeak = false;
                             break;
                         case 'GESTURE_RECOGNITION':
-                            console.log("Enabling gesture recognition");
+                            console.log('Enabling gesture recognition');
                             this.gesture_recognition = true;
                             this.play_video = false;
                             break;
@@ -113,8 +111,6 @@ module.exports = class SessionController {
                     this.isBotSpeaking = true;
                     this.session.speak(watsonText, 'ssml');
                 }
-            }).catch((err) => {
-                console.error(err);
             });
     }
 
@@ -127,7 +123,7 @@ module.exports = class SessionController {
             this.context.username = username;
         }
         if (!this.greeting_done) {
-            assistant.message("Hello", this.watson_session_id, this.context).then((response) => {
+            assistant.message('Hello', this.watson_session_id, this.context).then((response) => {
                 const watsonText = response.output.generic[0].text;
                 this.greeting_done = true;
                 this.isBotSpeaking = true;
@@ -145,7 +141,7 @@ module.exports = class SessionController {
         }
         if (this.play_video && data && data.handgesture === 12) {
             this.isBotSpeaking = true;
-            assistant.message("Skip the video", this.watson_session_id, this.context).then((response) => {
+            assistant.message('Skip the video', this.watson_session_id, this.context).then((response) => {
                 const watsonText = response.output.generic[0].text;
                 this.play_video = false;
                 this.gesture_recognition = true;
@@ -158,8 +154,8 @@ module.exports = class SessionController {
             if (data.emotion === 1) { // Only when happy
                 this.isBotSpeaking = true;
                 const emotion = data.emotion;
-                const contextWithGesture = Object.assign(this.context, { "gesture": EMOTIONS[emotion.toString()] })
-                assistant.message("", this.watson_session_id, contextWithGesture).then((response) => {
+                const contextWithGesture = Object.assign(this.context, { 'gesture': EMOTIONS[emotion.toString()] })
+                assistant.message('', this.watson_session_id, contextWithGesture).then((response) => {
                     console.log('watson', JSON.stringify(response));
                     const watsonText = response.output.generic[0].text;
                     this.isBotSpeaking = true;
@@ -170,8 +166,8 @@ module.exports = class SessionController {
             } else if (data.handgesture === 11) { // Only when waving
                 this.isBotSpeaking = true;
                 const handgesture = data.handgesture;
-                const contextWithGesture = Object.assign(this.context, { "gesture": HANDGESTURES[handgesture.toString()] })
-                assistant.message("", this.watson_session_id, contextWithGesture).then((response) => {
+                const contextWithGesture = Object.assign(this.context, { 'gesture': HANDGESTURES[handgesture.toString()] })
+                assistant.message('', this.watson_session_id, contextWithGesture).then((response) => {
                     console.log('watson', JSON.stringify(response));
                     const watsonText = response.output.generic[0].text;
                     this.session.speak(watsonText, 'ssml');
@@ -181,8 +177,8 @@ module.exports = class SessionController {
             } else if (data.headgesture && data.headgesture !== -1 && data.headgesture !== 0 && data.headgesture !== 1) { // Ignore nod
                 this.isBotSpeaking = true;
                 const headgesture = data.headgesture;
-                const contextWithGesture = Object.assign(this.context, { "gesture": HEADGESTURES[headgesture.toString()] })
-                assistant.message("", this.watson_session_id, contextWithGesture).then((response) => {
+                const contextWithGesture = Object.assign(this.context, { 'gesture': HEADGESTURES[headgesture.toString()] })
+                assistant.message('', this.watson_session_id, contextWithGesture).then((response) => {
                     console.log('watson', JSON.stringify(response));
                     const watsonText = response.output.generic[0].text;
                     this.session.speak(watsonText, 'ssml');
@@ -192,6 +188,4 @@ module.exports = class SessionController {
             }
         }
     }
-
-
 }

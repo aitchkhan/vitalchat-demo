@@ -43,11 +43,17 @@ module.exports = {
     devServer: {
         contentBase: path.join(rootPath, './dist'),
         host: 'localhost',
-        // watchContentBase: true,
         port: 9000
     },
     plugins: [
-        new Dotenv({path: path.join(rootPath, './.env'), silent: false, defaults: true}),
+        new Dotenv({
+            path: path.join(rootPath, './.env'),
+            defaults: true,
+        }),
+        new webpack.DefinePlugin({
+            VC_SERVER_URL: JSON.stringify(process.env.VC_SERVER_URL),
+            API_SERVER_URL: JSON.stringify(process.env.API_SERVER_URL),
+        }),
         new HtmlWebpackPlugin({
             hash: true,
             template: path.join(rootPath, './src/index.html'),

@@ -25,6 +25,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "vitalchat-client": "0.0.9"
+    "vitalchat-client": "0.0.10"
   }
 }

@@ -19,7 +19,7 @@ const vitalchat = new VitalChat({
 
 server.use(cors());
 
-server.get('/create_session', (req, res, next) => {
+server.get('/api/create_session', (req, res, next) => {
     vitalchat.createSession({
         tags: [{ my_id: '1234' }, { reference: '5678' }],
         callback: { url: 'https://myserver.com/vitalchat', user: '', password: '' },

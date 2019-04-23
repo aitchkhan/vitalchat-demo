@@ -5,8 +5,8 @@ services:
     build:
       context: ./client
       args:
-        - VC_SERVER_URL=http://stg-signal.vitalchat.com:1080
-        - API_SERVER_URL=http://localhost:3000
+        - VC_SERVER_URL=https://stg-signal.vitalchat.com
+        - API_SERVER_URL=https://demo.vitalchat.com/api
     ports:
       - 3001:80
 
@@ -15,9 +15,9 @@ services:
     ports:
       - 3000:3000
     environment:
-      - VC_SERVER_URL=http://stg-signal.vitalchat.com:1080
-      - VC_KEY=test
-      - VC_SECRET=dfff6d37-4a7f-4d4d-9d48-14b6e8958ecb
+      - VC_SERVER_URL=https://stg-signal.vitalchat.com
+      - VC_KEY=af561773-acf3-4d8d-9574-79d847e50734
+      - VC_SECRET=2eaed0bd-8327-417c-8088-02093b1a696e
       - WATSON_URL=https://gateway-tok.watsonplatform.net/assistant/api
       - WATSON_ASSISTANT_ID=ffad920c-9d37-4522-812a-35777b57cc27
       - WATSON_IAM_APIKEY=LpRgQnxxROitLdRAW0dJS1tuBj7evM4coxj94Jz1PWp8

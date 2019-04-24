@@ -15,7 +15,7 @@
     "dotenv": "^6.2.0",
     "restify": "^7.5.0",
     "socket.io": "^2.2.0",
-    "vitalchat": "0.0.3",
+    "vitalchat": "0.0.4",
     "watson-developer-cloud": "^3.16.1"
   },
   "devDependencies": {

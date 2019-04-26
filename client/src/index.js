@@ -1,6 +1,7 @@
 import VitalChat from 'vitalchat-client';
+import config from "./config";
 
-const CREATE_SESSION_ENDPOINT = '/create_session';
+const CREATE_SESSION_ENDPOINT = '/api/create_session';
 
 window.onload = setupClient;
 
@@ -47,7 +48,7 @@ function setupClient() {
 
     document.getElementById('make-call').onclick = () => {
         showStatus('Creating session...');
-        return fetch(`${API_SERVER_URL}${CREATE_SESSION_ENDPOINT}`)
+        return fetch(`${config.API_SERVER_URL}${CREATE_SESSION_ENDPOINT}`)
             .then((response) => {
                 if (response.status != 200) {
                     throw new Error(`Failed to create session (${response.statusText})`);
@@ -55,10 +56,10 @@ function setupClient() {
 
                 return response.json()
             })
-            .then(({session_id}) => {
+            .then(({session_id, vc_server_url}) => {
                 showStatus('Connecting...');
                 client = new VitalChat({
-                    baseUrl: VC_SERVER_URL,
+                    baseUrl: vc_server_url,
                     session_id: session_id,
                     localVideo: localVideo,
                     remoteVideo: remoteVideo,

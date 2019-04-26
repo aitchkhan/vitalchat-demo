@@ -6,7 +6,8 @@ const VitalChat = require('vitalchat');
 dotenv.config();
 const SessionController = require('./session-controller');
 
-const PORT = parseInt(process.env['PORT']) || 3000;
+const PORT = parseInt(process.env['PORT']) || 9001;
+const VC_SERVER_URL = process.env['VC_SERVER_URL'];
 const server = restify.createServer();
 const io = require('socket.io');
 const store = {};
@@ -14,7 +15,7 @@ const store = {};
 const vitalchat = new VitalChat({
     key: process.env['VC_KEY'],
     secret: process.env['VC_SECRET'],
-    baseUrl: process.env['VC_SERVER_URL'],
+    baseUrl: VC_SERVER_URL,
 });
 
 server.use(cors());
@@ -29,9 +30,13 @@ server.get('/api/create_session', (req, res, next) => {
             const controller = new SessionController(session);
             session.on('connect', (session_id) => {
                 store[session_id] = controller;
-                controller.watsonConnectPromise().then(() => {
-                    res.send({ session_id });
-                }).catch(next);
+                controller.watsonConnectPromise()
+                    .then(() => {
+                        res.send({
+                            session_id,
+                            vc_server_url: VC_SERVER_URL,
+                        });
+                    })
             });
             session.on('disconnect', (session_id) => {
                 console.log(session_id, 'disconnected');
@@ -42,7 +47,16 @@ server.get('/api/create_session', (req, res, next) => {
                 controller.onMessage(message);
             })
         })
-        .catch(next);
+        .catch((err) => {
+            if (err.message) {
+                res.status(400);
+                res.send(err.message);
+            } else {
+                console.error(err);
+                res.status(500)
+                res.send("Something Undexpected Happened.")
+             }
+        });
 });
 
 server.listen(PORT, () => {

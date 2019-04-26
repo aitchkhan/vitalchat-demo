@@ -4,16 +4,15 @@ services:
   client:
     build:
       context: ./client
-      args:
-        - VC_SERVER_URL=https://stg-signal.vitalchat.com
-        - API_SERVER_URL=https://demo.vitalchat.com/api
+    environment:
+        - API_SERVER_URL=http://localhost:9001
     ports:
-      - 3001:80
+      - 9000:80
 
   server:
     build: ./server
     ports:
-      - 3000:3000
+      - 9001:9001
     environment:
       - VC_SERVER_URL=https://stg-signal.vitalchat.com
       - VC_KEY=af561773-acf3-4d8d-9574-79d847e50734

@@ -52,7 +52,6 @@ module.exports = {
             defaults: true,
         }),
         new webpack.DefinePlugin({
-            VC_SERVER_URL: JSON.stringify(process.env.VC_SERVER_URL),
             API_SERVER_URL: JSON.stringify(process.env.API_SERVER_URL),
         }),
         new HtmlWebpackPlugin({

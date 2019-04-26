@@ -13,6 +13,12 @@ ENV API_SERVER_URL=${API_SERVER_URL}
 COPY . .
 RUN npm run build
 
-FROM nginx:latest
+FROM nginx:alpine
 
 COPY --from=builder /client/dist/ /usr/share/nginx/html/
+
+COPY ./entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

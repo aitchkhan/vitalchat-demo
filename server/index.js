@@ -49,13 +49,10 @@ server.get('/api/create_session', (req, res, next) => {
         })
         .catch((err) => {
             if (err.message) {
-                res.status(400);
-                res.send(err.message);
+                res.send(400, { message: err.message });
             } else {
-                console.error(err);
-                res.status(500)
-                res.send("Something Undexpected Happened.")
-             }
+                res.send(500, { message: 'Unknown error occurred' })
+            }
         });
 });
 

@@ -16,6 +16,7 @@ function showControlbar(name) {
         document.getElementById(`control-${controlbar}`).style.display = display;
     }
 }
+
 function showStatus(status) {
     document.getElementById('control-status').innerHTML = status;
     showControlbar('status');
@@ -56,11 +57,11 @@ function setupClient() {
 
                 return response.json()
             })
-            .then(({session_id, vc_server_url}) => {
+            .then(({ sessionId, vitalchatBaseURL }) => {
                 showStatus('Connecting...');
                 client = new VitalChat({
-                    baseUrl: vc_server_url,
-                    session_id: session_id,
+                    baseURL: vitalchatBaseURL,
+                    sessionId: sessionId,
                     localVideo: localVideo,
                     remoteVideo: remoteVideo,
                 });

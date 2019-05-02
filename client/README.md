@@ -1,4 +1,4 @@
-# Vital Chat Client Web Application
+# VitalChat Demo App Client
 
 ## How to Run
 

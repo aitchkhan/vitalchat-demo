@@ -1,58 +1,96 @@
-const cors = require('cors');
 const restify = require('restify');
-const dotenv = require('dotenv');
+const io = require('socket.io');
+const cors = require('cors');
 const VitalChat = require('vitalchat');
-
-dotenv.config();
-const SessionController = require('./session-controller');
+const ConvoController = require('./ConvoController');
 
 const PORT = parseInt(process.env['PORT']) || 9001;
 const VC_SERVER_URL = process.env['VC_SERVER_URL'];
-const server = restify.createServer();
-const io = require('socket.io');
-const store = {};
 
 const vitalchat = new VitalChat({
     key: process.env['VC_KEY'],
     secret: process.env['VC_SECRET'],
-    baseUrl: VC_SERVER_URL,
+    baseURL: VC_SERVER_URL,
 });
 
+const server = restify.createServer();
 server.use(cors());
 
-server.get('/api/create_session', (req, res, next) => {
+server.get('/api/create_session', (req, res) => {
     vitalchat.createSession({
         tags: [{ my_id: '1234' }, { reference: '5678' }],
         callback: { url: 'https://myserver.com/vitalchat', user: '', password: '' },
         defaults: { character: 'sally' }
     })
         .then((session) => {
-            const controller = new SessionController(session);
-            session.on('connect', (session_id) => {
-                store[session_id] = controller;
-                controller.watsonConnectPromise()
-                    .then(() => {
-                        res.send({
-                            session_id,
-                            vc_server_url: VC_SERVER_URL,
-                        });
-                    })
+            const conversation = new ConvoController(session);
+
+            session.on('connect', async () => {
+                res.send({
+                    sessionId: session.getId(),
+                    vitalchatBaseURL: VC_SERVER_URL,
+                });
+
+                function imagePath(text) {
+                    return `https://dummyimage.com/640x360/000000/fff.jpg&text=${encodeURIComponent(text)}`;
+                }
+
+                // Try to recognize with in 10 seconds
+                await conversation.waitUntil(ConvoController.recognizeFace(), 10000)
+                    .then((message) => conversation.speak(`Hello ${message.data.FaceMatches[0].Face.ExternalImageId}`))
+                    .catch(() => conversation.speak('Hello there!'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.waitUntil((message) => ConvoController.detect('wave')(message) || ConvoController.recognizeSpeech(['hello', 'hi'])(message)))
+                    .then(() => conversation.playVideo('file:///mcu/assets/media/video.webm'))
+                    .then(() => conversation.waitUntil((message) => ConvoController.videoEnd()(message) || ConvoController.recognizeSpeech('stop')(message)))
+                    .then(() => conversation.clearMedia())
+
+                    .then(() => conversation.speak('Which of these can I help with?'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.showImage(imagePath('menu')))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['symptom', 'symptoms'])))
+
+                    .then(() => conversation.speak('What is wrong?'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.showImage(imagePath('1. Headache 2. Diarrhea')))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['headache', 'headaches', 'diarrhea'])))
+
+                    .then(() => conversation.speak('Question 1 goes here'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.showImage(imagePath('question 1')))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['answer', 'answers'])))
+
+                    .then(() => conversation.speak('Question 2 goes here'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.showImage(imagePath('question 2')))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['answer', 'answers'])))
+
+                    .then(() => conversation.waitUntil(ConvoController.detect('unattentive')))
+                    .then(() => conversation.showImage(imagePath('Pay attention')))
+                    .then(() => conversation.waitUntil(ConvoController.detect('attentive')))
+
+                    .then(() => conversation.speak('Your possible issue is Tension Headache. Would you like to see a video about it?'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['yes', 'yep', 'sure'])))
+
+                    .then(() => conversation.playVideo('file:///mcu/assets/media/video.webm'))
+                    .then(() => conversation.waitUntil((message) => ConvoController.videoEnd()(message) || ConvoController.recognizeSpeech('stop')(message)))
+                    .then(() => conversation.clearMedia())
+
+                    .then(() => conversation.speak('Thank you'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()));
             });
-            session.on('disconnect', (session_id) => {
-                console.log(session_id, 'disconnected');
-                delete store[session_id];
+
+            session.on('disconnect', () => {
+                console.log(session.getId(), 'disconnected');
             });
-            session.on('message', ({ data, session_id }) => {
-                const message = JSON.parse(data);
-                controller.onMessage(message);
-            })
         })
         .catch((err) => {
             if (err.message) {
                 res.send(400, { message: err.message });
-            } else {
-                res.send(500, { message: 'Unknown error occurred' })
             }
+
+            res.send(500, { message: 'Unknown error occurred' });
         });
 });
 

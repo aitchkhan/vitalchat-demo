@@ -4,10 +4,7 @@ WORKDIR /client
 COPY package*.json ./
 RUN npm install
 
-ARG VC_SERVER_URL=https://alb-signal.vitalchat.com
-ARG API_SERVER_URL=http://localhost:3000
-
-ENV VC_SERVER_URL=${VC_SERVER_URL}
+ARG API_SERVER_URL=http://localhost:9000
 ENV API_SERVER_URL=${API_SERVER_URL}
 
 COPY . .

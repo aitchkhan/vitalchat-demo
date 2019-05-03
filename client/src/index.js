@@ -99,6 +99,9 @@ function setupClient() {
     document.getElementById('video').onclick = () => {
         client.playVideo();
     };
+    document.getElementById('debug').onclick = () => {
+        client.sendMessage({ type: 'debug' });
+    };
 
     showControlbar('start');
 }

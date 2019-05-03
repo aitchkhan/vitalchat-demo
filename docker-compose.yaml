@@ -2,12 +2,11 @@ version: '3'
 
 services:
   client:
-    build:
-      context: ./client
-    environment:
-        - API_SERVER_URL=https://demo.vitalchat.com
+    build: ./client
     ports:
       - 9000:80
+    environment:
+      - API_SERVER_URL=https://demo.vitalchat.com
 
   server:
     build: ./server

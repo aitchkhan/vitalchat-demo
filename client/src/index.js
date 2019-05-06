@@ -5,6 +5,19 @@ const CREATE_SESSION_ENDPOINT = '/api/create_session';
 
 window.onload = setupClient;
 
+window.onkeyup = function onKeyUp(params) {
+    // on "i" key press
+    if(event.keyCode === 73) {
+        const infoDiv = document.getElementById('info-div');
+        if(infoDiv.style.visibility  === 'hidden') {
+            infoDiv.style.visibility = 'visible';
+            return;
+        }
+        infoDiv.style.visibility = 'hidden';
+        return;
+    }
+}
+
 function showControlbar(name) {
     const controlbars = ['start', 'play', 'status'];
     if (controlbars.indexOf(name) == -1) {
@@ -20,6 +33,43 @@ function showControlbar(name) {
 function showStatus(status) {
     document.getElementById('control-status').innerHTML = status;
     showControlbar('status');
+}
+
+function recordEvent(event) {
+    const data = event.data ? JSON.parse(event.data) : null;
+
+    switch (data.type) {
+        case "detection":
+            if(data.data.attentive) {
+                document.getElementById("attentive").innerHTML = data.data.attentive; 
+            }
+
+            if(data.data.handgesture) {
+                document.getElementById("hand_gesture").innerHTML = data.data.handgesture; 
+            }
+            break;
+
+        case "face_attributes":
+            let face_attributes;
+            if (Array.isArray(data.data.FaceMatches)) {
+                face_attributes = data.data.FaceMatches[0].Face.ExternalImageId;
+            } else {
+                face_attributes = JSON.stringify(data.data.FaceDetails[0].Smile);
+            }
+            document.getElementById("face_attributes").innerHTML = face_attributes;
+            break;
+
+        case "transcript":
+            document.getElementById("transcript").innerHTML = JSON.stringify(data.data.transcript);
+            break;
+    }
+}
+
+function resetInfoDiv() {
+    document.getElementById("attentive").innerHTML = 0; 
+    document.getElementById("hand_gesture").innerHTML = 0; 
+    document.getElementById("face_attributes").innerHTML = 0; 
+    document.getElementById("transcript").innerHTML = 0;
 }
 
 function setupClient() {
@@ -49,6 +99,9 @@ function setupClient() {
 
     document.getElementById('make-call').onclick = () => {
         showStatus('Creating session...');
+
+        // resetting the info-div
+        resetInfoDiv();
         return fetch(`${config.API_SERVER_URL}${CREATE_SESSION_ENDPOINT}`)
             .then((response) => {
                 if (response.status != 200) {
@@ -67,6 +120,8 @@ function setupClient() {
                 });
 
                 client.on('connect', () => {
+                    client.socket.onmessage = recordEvent;
+                    
                     showControlbar('play');
                 });
 

@@ -86,13 +86,20 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => conversation.speak('Thank you for answering all the questions. It is possible that you have Tension Headache. Would you like to see a video about it?'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['yes', 'yep', 'sure', 'no'])))
+                    .then((message) => {
+                        if (ConvoController.recognizeSpeech(['yes', 'yep', 'sure'])(message)) {
+                            return conversation.playVideo('file:///mcu/assets/media/video.webm')
+                                .then(() => conversation.waitUntil((message) => ConvoController.videoEnd()(message) || ConvoController.recognizeSpeech('stop')(message)))
+                                .then(() => conversation.clearMedia())
+                                .then(() => new Promise((resolve) => setTimeout(() => resolve(), 3000)));
+                        }
 
-                    .then(() => conversation.playVideo('file:///mcu/assets/media/video.webm'))
-                    .then(() => conversation.waitUntil((message) => ConvoController.videoEnd()(message) || ConvoController.recognizeSpeech('stop')(message)))
-                    .then(() => conversation.clearMedia())
-
-                    .then(() => conversation.speak('Thank you for using the Symptom checker'))
-                    .then(() => conversation.waitUntil(ConvoController.speechEnd()));
+                        return Promise.resolve();
+                    })
+                    .then(() => conversation.speak('Thank you for using the Symptom checker, good bye!'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 2000)))
+                    .then(() => session.end());
             });
 
             session.on('disconnect', () => {

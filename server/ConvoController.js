@@ -36,8 +36,8 @@ class ConvoController {
         });
     }
 
-    speak(text, type) {
-        return this.session.speak(text, type);
+    speak(text, type, audioOnly = false) {
+        return this.session.speak(text, type, audioOnly);
     }
 
     showImage(uri) {

@@ -36,22 +36,10 @@ server.get('/api/create_session', (req, res) => {
                     return `https://imgplaceholder.com/640x360/000?font-size=25&font-family=OpenSans&text=${encodeURIComponent(text)}`;
                 }
 
-                // Try to recognize with in 10 seconds
-                await conversation.waitUntil(ConvoController.recognizeFace(), 10000)
-                    .then((message) => conversation.speak(`Hello ${message.data.FaceMatches[0].Face.ExternalImageId}`))
-                    .catch(() => conversation.speak('Hello there!'))
+                const symptomChecker = () => conversation.speak('Please say one of the following chief complaints.')
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => conversation.waitUntil((message) => ConvoController.detect('wave')(message) || ConvoController.recognizeSpeech(['hello', 'hi'])(message)))
-
-                    .then(() => conversation.speak('Which of these can I help with? Please say one of these words.'))
-                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => conversation.showImage(imagePath('1. Symptom Checker\n2. Medical Records')))
-                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['symptom', 'symptoms'])))
-
-                    .then(() => conversation.speak('Please say one of the following chief complaints.'))
-                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => conversation.showImage(imagePath('1. Headache\n2. Diarrhea')))
-                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['headache', 'headaches', 'diarrhea'])))
+                    .then(() => conversation.showImage(imagePath('1. Abdominal pain\n2. Chest pain\n3. Cough\n4. Diarrhea\n5. Dizziness\n6. Headaches\n7. Low back pain\n8. Nausea or vomiting\n9. Sore throat')))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['abdominal', 'chest', 'pain', 'cough', 'diarrhea', 'dizzy', 'dizziness', 'headache', 'headaches', 'nausea', 'vomiting', 'sore', 'throat'])))
 
                     .then(() => conversation.speak('Which of the following best describes your pain level?'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
@@ -98,7 +86,53 @@ server.get('/api/create_session', (req, res) => {
                     })
                     .then(() => conversation.speak('Thank you for using the Symptom checker, good bye!'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 2000)))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 2000)));
+
+                const patientFinder = () => conversation.speak('I can help you find the patient you are looking for. What is the name of the patient?')
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['alex', 'alexa'])))
+
+                    .then(() => conversation.speak('Let me check, one second. Alexa is in room 201, south wing. Here are the directions to get there from this location.'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+
+                    .then(() => conversation.showImage('https://i.ibb.co/dLsCjSb/elevators.jpg'))
+                    .then(() => conversation.speak('Please go to the elevators to your right.', 'text', true))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+
+                    .then(() => conversation.showImage('https://i.ibb.co/vBQLxmH/2nd.jpg'))
+                    .then(() => conversation.speak('Go to to 2nd floor.', 'text', true))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+
+                    .then(() => conversation.showImage('https://i.ibb.co/2tdrzpg/hallway.jpg'))
+                    .then(() => conversation.speak('When on the second floor, take a left and follow the blue lines in the hallway.', 'text', true))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+
+                    .then(() => conversation.showImage('https://i.ibb.co/DQs7D3H/room.jpg'))
+                    .then(() => conversation.speak('Room 207 will be on the right.', 'text', true))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+
+                    .then(() => conversation.speak('Thank you for using the patient finder, good bye!'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 2000)));
+
+                // Try to recognize with in 10 seconds
+                await conversation.waitUntil(ConvoController.recognizeFace(), 10000)
+                    .then((message) => conversation.speak(`Hello ${message.data.FaceMatches[0].Face.ExternalImageId}`))
+                    .catch(() => conversation.speak('Hello there!'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.waitUntil((message) => ConvoController.detect('wave')(message) || ConvoController.recognizeSpeech(['hello', 'hi'])(message)))
+
+                    .then(() => conversation.speak('Which of these can I help with? Please say one of these words.'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => conversation.showImage(imagePath('1. Symtom Checker\n2. Patient Finder\n3. Appointments\n4. Medical Records')))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['symptom', 'symptoms', 'checker', 'patient', 'find', 'finder'])))
+                    .then((message) => {
+                        if (ConvoController.recognizeSpeech(['symptom', 'symptoms', 'checker'])(message)) {
+                            return symptomChecker();
+                        }
+
+                        return patientFinder();
+                    })
                     .then(() => session.end());
             });
 

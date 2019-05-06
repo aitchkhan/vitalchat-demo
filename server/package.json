@@ -15,7 +15,7 @@
     "cors": "^2.8.5",
     "restify": "^7.5.0",
     "socket.io": "^2.2.0",
-    "vitalchat": "0.0.7"
+    "vitalchat": "0.0.8"
   },
   "devDependencies": {
     "chai": "^4.2.0",

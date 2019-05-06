@@ -1,5 +1,5 @@
 import VitalChat from 'vitalchat-client';
-import config from "./config";
+import config from './config';
 
 const CREATE_SESSION_ENDPOINT = '/api/create_session';
 
@@ -9,7 +9,7 @@ window.onkeyup = function onKeyUp(params) {
     // on "i" key press
     if(event.keyCode === 73) {
         const infoDiv = document.getElementById('info-div');
-        if(infoDiv.style.visibility  === 'hidden') {
+        if(infoDiv.style.visibility === 'hidden') {
             infoDiv.style.visibility = 'visible';
             return;
         }
@@ -39,37 +39,37 @@ function recordEvent(event) {
     const data = event.data ? JSON.parse(event.data) : null;
 
     switch (data.type) {
-        case "detection":
+        case 'detection':
             if(data.data.attentive) {
-                document.getElementById("attentive").innerHTML = data.data.attentive; 
+                document.getElementById('attentive').innerHTML = data.data.attentive; 
             }
 
             if(data.data.handgesture) {
-                document.getElementById("hand_gesture").innerHTML = data.data.handgesture; 
+                document.getElementById('hand_gesture').innerHTML = data.data.handgesture; 
             }
             break;
 
-        case "face_attributes":
+        case 'face_attributes':
             let face_attributes;
             if (Array.isArray(data.data.FaceMatches)) {
                 face_attributes = data.data.FaceMatches[0].Face.ExternalImageId;
             } else {
                 face_attributes = JSON.stringify(data.data.FaceDetails[0].Smile);
             }
-            document.getElementById("face_attributes").innerHTML = face_attributes;
+            document.getElementById('face_attributes').innerHTML = face_attributes;
             break;
 
-        case "transcript":
-            document.getElementById("transcript").innerHTML = JSON.stringify(data.data.transcript);
+        case 'transcript':
+            document.getElementById('transcript').innerHTML = JSON.stringify(data.data.transcript);
             break;
     }
 }
 
 function resetInfoDiv() {
-    document.getElementById("attentive").innerHTML = 0; 
-    document.getElementById("hand_gesture").innerHTML = 0; 
-    document.getElementById("face_attributes").innerHTML = 0; 
-    document.getElementById("transcript").innerHTML = 0;
+    document.getElementById('attentive').innerHTML = 0; 
+    document.getElementById('hand_gesture').innerHTML = 0; 
+    document.getElementById('face_attributes').innerHTML = 0; 
+    document.getElementById('transcript').innerHTML = 0;
 }
 
 function setupClient() {

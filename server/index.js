@@ -96,20 +96,28 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
 
                     .then(() => conversation.showImage('https://i.ibb.co/dLsCjSb/elevators.jpg'))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Please go to the elevators to your right.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
                     .then(() => conversation.showImage('https://i.ibb.co/vBQLxmH/2nd.jpg'))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Go to to 2nd floor.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
                     .then(() => conversation.showImage('https://i.ibb.co/2tdrzpg/hallway.jpg'))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('When on the second floor, take a left and follow the blue lines in the hallway.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
                     .then(() => conversation.showImage('https://i.ibb.co/DQs7D3H/room.jpg'))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Room 207 will be on the right.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
                     .then(() => conversation.speak('Thank you for using the patient finder, good bye!'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))

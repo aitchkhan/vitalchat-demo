@@ -95,7 +95,7 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => conversation.speak('Let me check, one second. Alexa is in room 201, south wing. Here are the directions to get there from this location.'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
 
-                    .then(() => conversation.showImage('https://i.ibb.co/dLsCjSb/elevators.jpg'))
+                    .then(() => conversation.showImage('https://i.ibb.co/1ZPNnnw/elevators.jpg'))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Please go to the elevators to your right.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))

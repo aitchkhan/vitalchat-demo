@@ -5,7 +5,12 @@ const CREATE_SESSION_ENDPOINT = '/api/create_session';
 
 window.onload = setupClient;
 
-window.onkeyup = function onKeyUp(params) {
+window.onkeyup = function onKeyUp(event) {
+    const speakTextElem = document.getElementById('speak-text');
+    if (speakTextElem === document.activeElement) {
+        return;
+    }
+
     // on "i" key press
     if(event.keyCode === 73) {
         const infoDiv = document.getElementById('info-div');

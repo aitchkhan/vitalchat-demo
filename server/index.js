@@ -33,7 +33,7 @@ server.get('/api/create_session', (req, res) => {
 
                 function imagePath(text) {
                     text = text.replace(/\n/gu, '_br_');
-                    return `https://imgplaceholder.com/640x360/000?font-size=25&font-family=OpenSans&text=${encodeURIComponent(text)}`;
+                    return `https://imgplaceholder.com/896x504/000?font-size=25&font-family=OpenSans&text=${encodeURIComponent(text)}`;
                 }
 
                 const symptomChecker = () => conversation.speak('Please say one of the following chief complaints.')
@@ -95,25 +95,25 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => conversation.speak('Let me check, one second. Alexa is in room 201, south wing. Here are the directions to get there from this location.'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
 
-                    .then(() => conversation.showImage('https://i.ibb.co/1ZPNnnw/elevators.jpg'))
+                    .then(() => conversation.showImage('https://i.imgur.com/Fd8uocm.png')) //elevators image
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Please go to the elevators to your right.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
-                    .then(() => conversation.showImage('https://i.ibb.co/vBQLxmH/2nd.jpg'))
+                    .then(() => conversation.showImage('https://i.imgur.com/w15pnv5.png')) //2nd button on lift
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Go to to 2nd floor.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
-                    .then(() => conversation.showImage('https://i.ibb.co/2tdrzpg/hallway.jpg'))
+                    .then(() => conversation.showImage('https://i.imgur.com/J1bG0GV.png')) //hallway image
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('When on the second floor, take a left and follow the blue lines in the hallway.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
-                    .then(() => conversation.showImage('https://i.ibb.co/DQs7D3H/room.jpg'))
+                    .then(() => conversation.showImage('https://i.imgur.com/73TycKr.png'))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Room 207 will be on the right.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
@@ -132,7 +132,9 @@ server.get('/api/create_session', (req, res) => {
 
                     .then(() => conversation.speak('Which of these can I help with? Please say one of these words.'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => conversation.showImage(imagePath('1. Symtom Checker\n2. Patient Finder\n3. Appointments\n4. Medical Records')))
+                    .then(() => setTimeout(() => {
+                        conversation.showImage(imagePath('1. Symptom Checker\n2. Patient Finder\n3. Appointments\n4. Medical Records'));
+                    }, 1000))
                     .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['symptom', 'symptoms', 'checker', 'patient', 'find', 'finder'])))
                     .then((message) => {
                         if (ConvoController.recognizeSpeech(['symptom', 'symptoms', 'checker'])(message)) {

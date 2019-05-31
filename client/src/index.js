@@ -131,6 +131,7 @@ function setupClient() {
                 });
 
                 client.on('disconnect', () => {
+                    client.end();
                     showControlbar('start');
                 });
 

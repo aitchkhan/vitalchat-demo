@@ -94,19 +94,19 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => conversation.speak('Let me check, one second. Alexa is in room 201, south wing. Here are the directions to get there from this location.'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
 
-                    .then(() => conversation.showImage('https://i.imgur.com/Fd8uocm.png')) //elevators image
+                    .then(() => conversation.showImage('https://i.imgur.com/Fd8uocm.png')) // Elevators image
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Please go to the elevators to your right.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
-                    .then(() => conversation.showImage('https://i.imgur.com/w15pnv5.png')) //2nd button on lift
+                    .then(() => conversation.showImage('https://i.imgur.com/w15pnv5.png')) // 2nd button on lift
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('Go to to 2nd floor.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
 
-                    .then(() => conversation.showImage('https://i.imgur.com/J1bG0GV.png')) //hallway image
+                    .then(() => conversation.showImage('https://i.imgur.com/J1bG0GV.png')) // Hallway image
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.speak('When on the second floor, take a left and follow the blue lines in the hallway.', 'text', true))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
@@ -151,10 +151,10 @@ server.get('/api/create_session', (req, res) => {
         })
         .catch((err) => {
             if (err.message) {
-                res.send(400, { message: err.message });
+                return res.send(400, { message: err.message });
             }
 
-            res.send(500, { message: 'Unknown error occurred' });
+            return res.send(500, { message: 'Unknown error occurred' });
         });
 });
 

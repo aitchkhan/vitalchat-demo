@@ -18,9 +18,8 @@ server.use(cors());
 
 server.get('/api/create_session', (req, res) => {
     vitalchat.createSession({
-        tags: [{ my_id: '1234' }, { reference: '5678' }],
-        callback: { url: 'https://myserver.com/vitalchat', user: '', password: '' },
-        defaults: { character: 'sally' }
+        character: 'cathy',
+        resolution: 504,
     })
         .then((session) => {
             const conversation = new ConvoController(session);

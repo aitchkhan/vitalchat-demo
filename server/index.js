@@ -122,22 +122,76 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 2000)));
 
+                const personalAssistant = () => conversation.speak('I am going to ask you a few question to test your memory.')
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
+                    .then(() => personalAssistantQuestions())
+
+
+                const personalAssistantQuestions = () => conversation.speak('Here is a picture of Morgan Freeman?')
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1400)))
+                    .then(() => conversation.showImage('https://pmcvariety.files.wordpress.com/2018/05/morgan-freeman-sexual-harassment-7.jpg'))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 4000)))
+                    .then(() => conversation.clearMedia())
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 500)))
+                    .then(() => conversation.speak('Do you recognize Morgan? He is your favorite actor. Tell me about your favorite movie of Morgan Freeman.'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => recognizeSpeechEndForPA())
+                    .then(() => conversation.speak('Hmmm. That\'s interesting. Here is a picture of Killmer High School where you used to study in your childhood.'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1750)))
+                    .then(() => conversation.showImage('https://i.imgur.com/JAl0wov.png'))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 4000)))
+                    .then(() => conversation.clearMedia())
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 500)))
+                    .then(() => conversation.speak('How about you tell me about your days at Killmer High School'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => recognizeSpeechEndForPA())
+                    .then(() => conversation.speak('That\'s quite fascinating. Now please check out the following picture.'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1750)))
+                    .then(() => conversation.showImage('https://calmatters.org/wp-content/uploads/Reno-1-1.jpg'))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 4000)))
+                    .then(() => conversation.clearMedia())
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 500)))
+                    .then(() => conversation.speak('Do you recognize this house? This is a picture of your childhood house. Please tell me how it was living over there?'))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => recognizeSpeechEndForPA())
+                    .then(() => conversation.speak('It was nice catching up with you. Goodbye'))
+                    .catch(() => conversation.speak("It was nice talking with you. Goodbye"))
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1200)))
+
+                    const recognizeSpeechEndForPA = () => {
+                        return conversation.waitUntil(ConvoController.recognizeSpeech(['that\'s it', 'that\'s all', 'i am finished', 'i\'m finished', 'i am done', 'i\'m done', 'please quit', 'i am tired', 'i\'m tired', 'end the bot', 'i have had enough', 'please stop']))
+                            .then(message => {
+                                if (ConvoController.recognizeSpeech(['quit', 'tired', 'end', 'enough', 'stop'])(message)) {
+                                    return Promise.reject("END_BOT");
+                                }
+                                    return Promise.resolve();
+                            })
+                    }
+
                 // Try to recognize with in 10 seconds
                 await conversation.waitUntil(ConvoController.recognizeFace(), 10000)
                     .then((message) => conversation.speak(`Hello ${message.data.FaceMatches[0].Face.ExternalImageId}`))
                     .catch(() => conversation.speak('Hello there!'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => conversation.waitUntil((message) => ConvoController.detect('wave')(message) || ConvoController.recognizeSpeech(['hello', 'hi'])(message)))
 
                     .then(() => conversation.speak('Which of these can I help with? Please say one of these words.'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => setTimeout(() => {
-                        conversation.showImage(imagePath('1. Symptom Checker\n2. Patient Finder\n3. Appointments\n4. Medical Records'));
-                    }, 1000))
-                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['symptom', 'symptoms', 'checker', 'patient', 'find', 'finder'])))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1200)))
+                    .then(() => conversation.showImage(imagePath('1. Symptom Checker\n2. Patient Finder\n3. Personal Assistant\n4. Medical Records')))
+                    .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['symptom', 'symptoms', 'checker', 'patient', 'find', 'finder', 'personal', 'assistant'])))
                     .then((message) => {
                         if (ConvoController.recognizeSpeech(['symptom', 'symptoms', 'checker'])(message)) {
                             return symptomChecker();
+                        }
+                        if (ConvoController.recognizeSpeech(['personal', 'assistant'])(message)) {
+                            return personalAssistant();
                         }
 
                         return patientFinder();

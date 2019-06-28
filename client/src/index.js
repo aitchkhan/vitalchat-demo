@@ -1,5 +1,8 @@
 import VitalChat from 'vitalchat-client';
 import config from './config';
+import headGestureEnum from './enums/head-gestures';
+import handGestureEnum from './enums/hand-gestures';
+import emotionEnum from './enums/emotions';
 
 const CREATE_SESSION_ENDPOINT = '/api/create_session';
 
@@ -45,36 +48,39 @@ function recordEvent(event) {
 
     switch (data.type) {
         case 'detection':
-            if(data.data.attentive) {
-                document.getElementById('attentive').innerHTML = data.data.attentive; 
+            if('hasFace' in data.data) {
+                document.getElementById('has_face').innerHTML = data.data.hasFace === 0 ? 'No' : 'Yes';
             }
 
-            if(data.data.handgesture) {
-                document.getElementById('hand_gesture').innerHTML = data.data.handgesture; 
+            if('headGesture' in data.data) {
+                document.getElementById('head_gesture').innerHTML = headGestureEnum[data.data.headGesture];
             }
-            break;
 
-        case 'face_attributes':
-            let face_attributes;
-            if (Array.isArray(data.data.FaceMatches)) {
-                face_attributes = data.data.FaceMatches[0].Face.ExternalImageId;
-            } else {
-                face_attributes = JSON.stringify(data.data.FaceDetails[0].Smile);
+            if('handGesture' in data.data) {
+                document.getElementById('hand_gesture').innerHTML = handGestureEnum[data.data.handGesture];
             }
-            document.getElementById('face_attributes').innerHTML = face_attributes;
+
+            if('emotion' in data.data) {
+                document.getElementById('emotion').innerHTML = emotionEnum[data.data.emotion];
+            }
             break;
 
         case 'transcript':
             document.getElementById('transcript').innerHTML = JSON.stringify(data.data.transcript);
             break;
+
+        case 'emotion':
+            document.getElementById('emotions').innerHTML = JSON.stringify(emotionEnum[data.data.emotion]);
+            break;
     }
 }
 
 function resetInfoDiv() {
-    document.getElementById('attentive').innerHTML = 0; 
-    document.getElementById('hand_gesture').innerHTML = 0; 
-    document.getElementById('face_attributes').innerHTML = 0; 
-    document.getElementById('transcript').innerHTML = 0;
+    document.getElementById('has_face').innerHTML = 'No';
+    document.getElementById('hand_gesture').innerHTML = handGestureEnum[0];
+    document.getElementById('head_gesture').innerHTML = headGestureEnum[0];
+    document.getElementById('emotion').innerHTML = headGestureEnum[0];
+    document.getElementById('transcript').innerHTML = '';
 }
 
 function setupClient() {

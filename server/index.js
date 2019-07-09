@@ -122,11 +122,12 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 2000)));
 
-                const personalAssistant = () => conversation.speak('I am going to ask you a few question to test your memory.')
-                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
-                    .then(() => personalAssistantQuestions())
-
+                const recognizeSpeechEndForPA = () => conversation.waitUntil(ConvoController.recognizeSpeech(['that\'s it', 'that\'s all', 'i am finished', 'i\'m finished', 'i am done', 'i\'m done', 'please quit', 'i am tired', 'i\'m tired', 'end the bot', 'i have had enough', 'please stop']))
+                    .then((message) => {
+                        if (ConvoController.recognizeSpeech(['quit', 'tired', 'end', 'enough', 'stop'])(message)) {
+                            throw new Error('END_BOT');
+                        }
+                    });
 
                 const personalAssistantQuestions = () => conversation.speak('Here is a picture of Morgan Freeman?')
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
@@ -161,17 +162,12 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => conversation.speak('It was nice catching up with you. Goodbye'))
                     .catch(() => conversation.speak("It was nice talking with you. Goodbye"))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1200)))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1200)));
 
-                    const recognizeSpeechEndForPA = () => {
-                        return conversation.waitUntil(ConvoController.recognizeSpeech(['that\'s it', 'that\'s all', 'i am finished', 'i\'m finished', 'i am done', 'i\'m done', 'please quit', 'i am tired', 'i\'m tired', 'end the bot', 'i have had enough', 'please stop']))
-                            .then(message => {
-                                if (ConvoController.recognizeSpeech(['quit', 'tired', 'end', 'enough', 'stop'])(message)) {
-                                    return Promise.reject("END_BOT");
-                                }
-                                    return Promise.resolve();
-                            })
-                    }
+                const personalAssistant = () => conversation.speak('I am going to ask you a few question to test your memory.')
+                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
+                    .then(() => personalAssistantQuestions());
 
                 // Try to recognize with in 10 seconds
                 await conversation.waitUntil(ConvoController.recognizeFace(), 10000)

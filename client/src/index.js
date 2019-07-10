@@ -63,6 +63,10 @@ function recordEvent(event) {
             if('emotion' in data.data) {
                 document.getElementById('emotion').innerHTML = emotionEnum[data.data.emotion];
             }
+
+            if('qrcode' in data.data) {
+                document.getElementById('code').innerHTML = data.data.qrcode;
+            }
             break;
 
         case 'transcript':
@@ -80,6 +84,7 @@ function resetInfoDiv() {
     document.getElementById('hand_gesture').innerHTML = handGestureEnum[0];
     document.getElementById('head_gesture').innerHTML = headGestureEnum[0];
     document.getElementById('emotion').innerHTML = headGestureEnum[0];
+    document.getElementById('code').innerHTML = '';
     document.getElementById('transcript').innerHTML = '';
 }
 

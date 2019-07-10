@@ -1,5 +1,6 @@
 const restify = require('restify');
 const io = require('socket.io');
+const AWS = require('aws-sdk');
 const cors = require('cors');
 const VitalChat = require('vitalchat');
 const ConvoController = require('./ConvoController');
@@ -23,13 +24,12 @@ server.get('/api/create_session', (req, res) => {
     })
         .then((session) => {
             const conversation = new ConvoController(session);
+            res.send({
+                sessionId: session.getId(),
+                vitalchatBaseURL: VC_SERVER_URL,
+            });
 
             session.on('connect', async () => {
-                res.send({
-                    sessionId: session.getId(),
-                    vitalchatBaseURL: VC_SERVER_URL,
-                });
-
                 function imagePath(text) {
                     text = text.replace(/\n/gu, '_br_');
                     return `https://imgplaceholder.com/896x504/000?font-size=25&font-family=OpenSans&text=${encodeURIComponent(text)}`;
@@ -169,14 +169,74 @@ server.get('/api/create_session', (req, res) => {
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
                     .then(() => personalAssistantQuestions());
 
-                // Try to recognize with in 10 seconds
-                await conversation.waitUntil(ConvoController.recognizeFace(), 10000)
-                    .then((message) => conversation.speak(`Hello ${message.data.FaceMatches[0].Face.ExternalImageId}`))
-                    .catch(() => conversation.speak('Hello there!'))
-                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
-                    .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1000)))
-                    .then(() => conversation.waitUntil((message) => ConvoController.detect('wave')(message) || ConvoController.recognizeSpeech(['hello', 'hi'])(message)))
+                const registerFace = (buffer) => {
+                    const nameLoop = () => {
+                        let name = false;
+                        const possibleAns = ['my name is', 'people call me', 'is my name'];
+                        return conversation.waitUntil(ConvoController.recognizeSpeech(possibleAns))
+                            .then((message) => {
+                                name = message.data.transcript.replace(new RegExp(`\\b(${possibleAns.join('|')})\\b`, 'ui'), '').trim()
+                                    .toLowerCase()
+                                    .split(' ')
+                                    .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+                                    .join('-');
+                            })
+                            .then(() => conversation.speak(`I heard ${name}. Did I hear that correctly?`))
+                            .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                            .then(() => conversation.waitUntil(ConvoController.recognizeSpeech(['yes', 'no'])))
+                            .then(async (message) => {
+                                if (ConvoController.recognizeSpeech(['no'])(message)) {
+                                    return conversation.speak('Please say it again.')
+                                        .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                                        .then(nameLoop);
+                                }
 
+                                const rekognition = new AWS.Rekognition();
+                                await rekognition.indexFaces({ CollectionId: 'user-faces', ExternalImageId: name, DetectionAttributes: ["ALL"], Image: { Bytes: buffer } }).promise();
+
+                                return conversation.speak(`Okay ${name}, I will remember you.`)
+                                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                                return conversation.speak('Sorry, I fail to register you.')
+                                    .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                            });
+                    };
+
+                    return conversation.speak('Hello there! This is the first time I am talking to you. What is your name?')
+                        .then(nameLoop);
+                };
+
+                const recognizeLoop = () => conversation.requestFace()
+                    .then(() => conversation.waitUntil(ConvoController.detect('face-image')))
+                    .then(async (message) => {
+                        const buffer = new Buffer.from(message.base64, 'base64');
+                        const rekognition = new AWS.Rekognition();
+
+                        const faces = await rekognition.searchFacesByImage({ CollectionId: 'user-faces', Image: { Bytes: buffer } }).promise();
+
+                        if (!faces.FaceMatches.length) {
+                            return registerFace(buffer);
+                        }
+
+                        const name = faces.FaceMatches[0].Face.ExternalImageId;
+                        return conversation.speak(`Hello ${name}`)
+                            .then(() => conversation.waitUntil(ConvoController.speechEnd()))
+                            .then(() => conversation.waitUntil((message) => ConvoController.detect('wave')(message) || ConvoController.recognizeSpeech(['hello', 'hi'])(message)));
+                    })
+                    // .then((message) => conversation.showImage(`data:image/png;base64,${message.base64}`))
+                    .catch((err) => {
+                        if (err.code === 'InvalidParameterException') {
+                            console.log('Face not found in image! :( Requesting again...');
+                            return recognizeLoop();
+                        }
+                        console.log(err);
+                        return conversation.speak(`Hello there, I'm sorry I'm unable to recognize anyone at this time. But let's continue helping you out.`)
+                            .then(() => conversation.waitUntil(ConvoController.speechEnd()));
+                    });
+
+                await recognizeLoop()
                     .then(() => conversation.speak('Which of these can I help with? Please say one of these words.'))
                     .then(() => conversation.waitUntil(ConvoController.speechEnd()))
                     .then(() => new Promise((resolve) => setTimeout(() => resolve(), 1200)))

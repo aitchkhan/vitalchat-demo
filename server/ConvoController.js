@@ -52,8 +52,8 @@ class ConvoController {
         return this.session.clearMedia();
     }
 
-    static recognizeFace() {
-        return (message) => message.type === 'face_attributes';
+    requestFace() {
+        return this.session.requestFace();
     }
 
     static recognizeSpeech(words) {
@@ -81,12 +81,12 @@ class ConvoController {
     static detect(what) {
         let checker = () => false;
 
-        if (what === 'attentive') {
-            checker = (message) => message.type === 'detection' && message.data.attentive === 1;
-        } else if (what === 'unattentive') {
-            checker = (message) => message.type === 'detection' && message.data.attentive === 0;
-        } else if (what === 'wave') {
-            checker = (message) => message.type === 'detection' && message.data.handgesture === 11;
+        if (what === 'wave') {
+            checker = (message) => message.type === 'detection' && message.data.handGesture === 1;
+        } else if (what === 'face') {
+            checker = (message) => message.type === 'detection' && message.data.hasFace === 1;
+        } else if (what === 'face-image') {
+            checker = (message) => message.type === 'face-image';
         }
 
         return checker;
